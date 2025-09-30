@@ -9,6 +9,11 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Profile;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\ProductImage;
+use App\Models\Review;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,6 +25,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@site.com',
             'password' => bcrypt('123456'),
             'role' => 'super_admin',
+            'email_verified_at' => now(),
+
         ]);
 
         // 🔹 Criar categorias fixas
@@ -52,12 +59,47 @@ class DatabaseSeeder extends Seeder
         // 🔹 Criar Produtos fake
         Product::factory()->count(100)->create();
 
+        //criar cart
+        $clients = User::where('role', 'client')->get();
+        foreach ($clients as $client) {
+            Cart::factory()->create(['user_id' => $client->id]);
+        }
+
+        //criar cart items
+        foreach (Cart::all() as $cart) {
+            CartItem::factory()->count(rand(1, 5))->create([
+                'cart_id' => $cart->id,
+            ]);
+        }
+
+        // 🔹 Criar perfis para todos os usuários
+        foreach (User::all() as $user) {
+            Profile::factory()->create([
+                'user_id' => $user->id,
+            ]);
+        }
+        // 🔹 Criar Reviews fake
+        Review::factory()->count(200)->create();
+
+        // Adicionar Imagens a produtos
+        foreach (Product::all() as $product) {
+            // Uma imagem principal e 2 extras
+            ProductImage::factory()->create([
+                'product_id' => $product->id,
+            ]);
+
+            ProductImage::factory()->count(2)->create([
+                'product_id' => $product->id,
+            ]);
+        }
+
         // 🔹 Criar Pedidos + Itens + Pagamentos
         $clients = User::where('role', 'client')->get();
         foreach ($clients as $client) {
             // Cada cliente pode ter até 3 pedidos
             $orders = Order::factory()->count(rand(1, 3))->create([
                 'user_id' => $client->id,
+                'shipping_address' => fake()->address(),
             ]);
 
             foreach ($orders as $order) {
@@ -84,11 +126,13 @@ class DatabaseSeeder extends Seeder
                 // Criar pagamento
                 Payment::create([
                     'order_id' => $order->id,
+                    'payment_status' => fake()->randomElement(['pending', 'approved', 'failed', 'refunded']),
                     'payment_method' => fake()->randomElement(['credit_card', 'pix', 'boleto', 'paypal']),
-                    'status' => fake()->randomElement(['pending', 'paid', 'failed']),
-                    'amount' => $total,
+                    'transaction_id' => fake()->uuid(),
                 ]);
             }
+
+            
         }
     }
 }
