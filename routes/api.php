@@ -2,9 +2,18 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{
-    ProductController, CartController, CartItemController, OrderController,
-    OrderItemController, PaymentController, ProfileController, ReviewController,
-    UserController, CategoryController, ProductImageController, AuthController
+    ProductController,
+    CartController,
+    CartItemController,
+    OrderController,
+    OrderItemController,
+    PaymentController,
+    ProfileController,
+    ReviewController,
+    UserController,
+    CategoryController,
+    ProductImageController,
+    AuthController
 };
 
 
@@ -17,7 +26,10 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::apiResource('products', ProductController::class)->only(['index', 'show']);
 Route::apiResource('categories', CategoryController::class)->only(['index', 'show']);
 Route::apiResource('product-images', ProductImageController::class)->only(['index', 'show']);
-Route::apiResource('reviews', ReviewController::class)->only(['index', 'show']);
+// Route::apiResource('reviews', ReviewController::class)->only(['index', 'show']);
+Route::get('/products/{id}/reviews', [ProductController::class, 'getProductReviews']);
+Route::get('/profile/current', [ProfileController::class, 'getCurrentUserProfile']);
+Route::get('/profiles/user/{userId}', [ProfileController::class, 'getProfileByUserId']);
 
 
 // Rotas protegidas
@@ -38,5 +50,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('profiles', ProfileController::class);
     Route::apiResource('reviews', ReviewController::class)->except(['index', 'show']);
 });
-
-
