@@ -20,39 +20,47 @@ use App\Http\Controllers\{
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// Rotas públicas
-Route::get('/products', [ProductController::class, 'index']); // ✅ ROTA EXPLÍCITA
-Route::get('/products/{slug}', [ProductController::class, 'showBySlug']); // ✅ ROTA DE SLUG
-Route::apiResource('categories', CategoryController::class)->only(['index']);
-Route::apiResource('product-images', ProductImageController::class)->only(['index', 'show']);
+// =============================================
+// ROTAS PÚBLICAS
+// =============================================
 
-// 🔥 ROTAS COM SLUG
-Route::get('/categories/{category:slug}', [CategoryController::class, 'showBySlug']);
-Route::get('/categories/{category:slug}/products', [ProductController::class, 'getProductsByCategory']);
+// Categorias
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{category}', [CategoryController::class, 'show']); // ÚNICA ROTA - aceita ID ou slug
+Route::get('/categories/{id}/products', [CategoryController::class, 'getCategoryProducts']); // ÚNICA ROTA
 
-// 🎯 REVIEWS
+// Produtos
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
+
+// Imagens
+Route::get('/product-images', [ProductImageController::class, 'index']);
+Route::get('/product-images/{productImage}', [ProductImageController::class, 'show']);
+
+// Reviews
 Route::get('/products/{product}/reviews', [ProductController::class, 'getProductReviews']);
 
-// Outras rotas públicas
+// Perfis
 Route::get('/profile/current', [ProfileController::class, 'getCurrentUserProfile']);
 Route::get('/profiles/user/{userId}', [ProfileController::class, 'getProfileByUserId']);
 
-// Rotas protegidas
+// =============================================
+// ROTAS PROTEGIDAS
+// =============================================
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-
-    // 🔥 MANTÉM ROTAS ORIGINAIS COM ID PARA ADMIN
+    
     Route::apiResource('products', ProductController::class)->except(['index', 'show']);
-    Route::apiResource('categories', CategoryController::class)->except(['index']);
+    Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
     Route::apiResource('product-images', ProductImageController::class)->except(['index', 'show']);
+    Route::apiResource('reviews', ReviewController::class)->except(['index', 'show']);
 
-    Route::apiResource('carts', CartController::class);
+    Route::apiResource('cart', CartController::class);
     Route::apiResource('cart-items', CartItemController::class);
+    
     Route::apiResource('orders', OrderController::class);
     Route::apiResource('order-items', OrderItemController::class);
     Route::apiResource('payments', PaymentController::class);
-
     Route::apiResource('users', UserController::class);
     Route::apiResource('profiles', ProfileController::class);
-    Route::apiResource('reviews', ReviewController::class)->except(['index', 'show']);
 });

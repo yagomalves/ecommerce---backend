@@ -34,14 +34,44 @@ class CategoryController extends Controller
     }
 
     // MÉTODO para buscar produtos da categoria
-    public function getProductsByCategory($slug)
+    public function getCategoryProducts($id, Request $request)
     {
-        $category = Category::where('slug', $slug)->firstOrFail();
-        $products = $category->products()->paginate(12); // Assumindo relação 'products'
-        
+        $perPage = $request->get('per_page', 21);
+        $page = $request->get('page', 1);
+
+        $category = Category::findOrFail($id);
+
+        $products = $category->products()
+            ->with('images')
+            ->paginate($perPage, ['*'], 'page', $page);
+
         return response()->json([
-            'category' => $category,
-            'products' => $products
+            'data' => $products->items(),
+            'total' => $products->total(),
+            'per_page' => $products->perPage(),
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage()
+        ]);
+    }
+
+    // MÉTODO para buscar produtos da categoria por ID
+    public function getCategoryProductsById($id, Request $request)
+    {
+        $perPage = $request->get('per_page', 21);
+        $page = $request->get('page', 1);
+
+        $category = Category::findOrFail($id);
+
+        $products = $category->products()
+            ->with('images')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'data' => $products->items(),
+            'total' => $products->total(),
+            'per_page' => $products->perPage(),
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage()
         ]);
     }
 

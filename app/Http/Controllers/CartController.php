@@ -5,13 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Http\Requests\StoreCartRequest;
 use App\Http\Requests\UpdateCartRequest;
+use Illuminate\Support\Facades\Auth;
+
 
 class CartController extends Controller
 {
     public function index()
     {
         // Você pode querer listar apenas o carrinho do usuário logado
-        return Cart::with('items')->paginate(10);
+        $user = Auth::user();
+
+        // Retorna apenas o carrinho do usuário autenticado com os itens + produto
+        return Cart::with('items.product')
+            ->where('user_id', $user->id)
+            ->first();
     }
 
 
