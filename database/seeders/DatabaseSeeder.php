@@ -81,16 +81,20 @@ class DatabaseSeeder extends Seeder
         // 🔹 Criar Reviews fake
         Review::factory()->count(200)->create();
 
-        // Adicionar Imagens a produtos
-        foreach (Product::all() as $product) {
-            // Uma imagem principal e 2 extras
+        // 🔹 Adicionar Imagens a produtos - CORRIGIDO
+        $products = Product::all();
+        foreach ($products as $product) {
+            // Uma imagem principal para cada produto
             ProductImage::factory()->create([
-                'product_id' => $product->id,
+                'product_id' => $product->id, // Fixo para este produto
             ]);
 
-            ProductImage::factory()->count(2)->create([
-                'product_id' => $product->id,
-            ]);
+            // 0 a 2 imagens extras para alguns produtos
+            if (rand(0, 1)) { // 50% de chance de ter imagens extras
+                ProductImage::factory()->count(rand(1, 2))->create([
+                    'product_id' => $product->id, // Fixo para este produto
+                ]);
+            }
         }
 
         // 🔹 Criar Pedidos + Itens + Pagamentos
@@ -131,8 +135,6 @@ class DatabaseSeeder extends Seeder
                     'transaction_id' => fake()->uuid(),
                 ]);
             }
-
-            
         }
     }
 }
