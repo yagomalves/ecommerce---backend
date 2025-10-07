@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
-use App\Models\Review;
-use App\Http\Requests\StoreProductRequest;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Support\Facades\Log; // ✅ ADICIONE ESTA LINHA
 
@@ -47,7 +46,7 @@ class ProductController extends Controller
     // NOVO: Buscar produto por slug
     public function showBySlug($slug)
     {
-        Log::info("Buscando produto por slug: " . $slug); // ✅ AGORA FUNCIONA
+        Log::info("Buscando produto por slug: " . $slug);
 
         $product = Product::where('slug', $slug)
             ->with('images', 'category', 'reviews.user', 'user')
@@ -69,11 +68,31 @@ class ProductController extends Controller
     }
 
     // MANTÉM para rotas protegidas (admin)
-    public function store(StoreProductRequest $request)
+    public function store(Request $request)
     {
-        $product = Product::create($request->validated());
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+            'stock_quantity' => 'required|integer',
+            'category_id' => 'required|exists:categories,id',
+            'image' => 'nullable|image|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('products', 'public');
+            $validated['image_url'] = '/storage/' . $path;
+        }
+
+        // ✅ Adiciona automaticamente o user_id do usuário logado
+        $validated['user_id'] = Auth::id();
+
+
+        $product = Product::create($validated);
+
         return response()->json($product, 201);
     }
+
 
     // MANTÉM original para compatibilidade (admin)
     public function show(Product $product)
