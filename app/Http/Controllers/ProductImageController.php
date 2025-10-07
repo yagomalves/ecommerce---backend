@@ -41,11 +41,11 @@ class ProductImageController extends Controller
         return response()->json($productImage, 201);
     }
 
-    public function show($slug)
-    {
-        // Já deve estar incluindo o relacionamento
-        return Product::with('images')->where('slug', $slug)->firstOrFail();
-    }
+    public function show(ProductImage $productImage)
+{
+    return $productImage->load('product');
+}
+
 
     public function update(UpdateProductImageRequest $request, ProductImage $productImage)
     {
