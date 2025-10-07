@@ -31,7 +31,7 @@ Route::get('/categories/{id}/products', [CategoryController::class, 'getCategory
 
 // Produtos
 Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/products/{slug}', [ProductController::class, 'showBySlug']);
 
 // Imagens
 Route::get('/product-images', [ProductImageController::class, 'index']);
@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('products', ProductController::class)->except(['index', 'show']);
     Route::apiResource('categories', CategoryController::class)->except(['index', 'show']);
     Route::apiResource('product-images', ProductImageController::class)->except(['index', 'show']);
+    Route::post('/products/{product}/images', [ProductImageController::class, 'storeImages']);
     Route::apiResource('reviews', ReviewController::class)->except(['index', 'show']);
 
     Route::apiResource('cart', CartController::class);

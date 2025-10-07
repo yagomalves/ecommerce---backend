@@ -34,12 +34,33 @@ class Product extends Model
         parent::boot();
 
         static::creating(function ($product) {
-            $product->slug = Str::slug($product->name);
+            $baseSlug = Str::slug($product->name);
+            $uniqueSlug = $baseSlug;
+            $count = 1;
+
+            while (Product::where('slug', $uniqueSlug)->exists()) {
+                $uniqueSlug = "{$baseSlug}-{$count}";
+                $count++;
+            }
+
+            $product->slug = $uniqueSlug;
         });
 
         static::updating(function ($product) {
             if ($product->isDirty('name')) {
-                $product->slug = Str::slug($product->name);
+                $baseSlug = Str::slug($product->name);
+                $uniqueSlug = $baseSlug;
+                $count = 1;
+
+                while (Product::where('slug', $uniqueSlug)
+                    ->where('id', '!=', $product->id)
+                    ->exists()
+                ) {
+                    $uniqueSlug = "{$baseSlug}-{$count}";
+                    $count++;
+                }
+
+                $product->slug = $uniqueSlug;
             }
         });
     }
